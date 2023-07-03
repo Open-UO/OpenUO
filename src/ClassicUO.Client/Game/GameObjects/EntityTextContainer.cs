@@ -117,6 +117,22 @@ namespace ClassicUO.Game.GameObjects
                 _messages.RemoveFromBack()?.Destroy();
             }
         }
+        
+        public void Add(byte font, ushort hue, string rollingText)
+        {
+            TextObject text_obj = TextObject.Create();
+
+            text_obj.RenderedText = RenderedText.Create(rollingText, hue, font, false);
+            
+            text_obj.Time = Time.Ticks + 1500;
+
+            _messages.AddToFront(text_obj);
+
+            if (_messages.Count > 10)
+            {
+                _messages.RemoveFromBack()?.Destroy();
+            }
+        }
 
         public void Update()
         {

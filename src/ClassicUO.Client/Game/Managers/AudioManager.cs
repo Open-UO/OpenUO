@@ -180,15 +180,66 @@ namespace ClassicUO.Game.Managers
                 _currentSounds.AddLast(sound);
             }
         }
-
-        public void PlayMusic(int music, bool iswarmode = false, bool is_login = false)
+        
+        public void PlaySound(UOSound sound)
         {
-            if (!_canReproduceAudio)
+            Profile currentProfile = ProfileManager.CurrentProfile;
+
+            if (!_canReproduceAudio || currentProfile == null)
             {
                 return;
             }
 
+            float volume = currentProfile.SoundVolume / SoundsLoader.SOUND_DELTA;
+
+            if (Client.Game.IsActive)
+            {
+                if (!currentProfile.ReproduceSoundsInBackground)
+                {
+                    volume = currentProfile.SoundVolume / SoundsLoader.SOUND_DELTA;
+                }
+            }
+            else if (!currentProfile.ReproduceSoundsInBackground)
+            {
+                volume = 0;
+            }
+
+            if (volume < -1 || volume > 1f)
+            {
+                return;
+            }
+
+            if (!currentProfile.EnableSound || !Client.Game.IsActive && !currentProfile.ReproduceSoundsInBackground)
+            {
+                volume = 0;
+            }
+
+            //UOSound sound = (UOSound) SoundsLoader.Instance.GetSound(index);
+
+            if (sound != null && sound.Play(Time.Ticks, volume))
+            {
+                sound.X = -1;
+                sound.Y = -1;
+                sound.CalculateByDistance = false;
+
+                _currentSounds.AddLast(sound);
+            }
+        }
+
+
+        public void PlayMusic(int music, bool iswarmode = false, bool is_login = false)
+        {
             if (music >= Constants.MAX_MUSIC_DATA_INDEX_COUNT)
+            {
+                return;
+            }
+            Sound m = SoundsLoader.Instance.GetMusic(music);
+            PlayMusic(m, music, iswarmode, is_login);
+        }
+        
+        public void PlayMusic(Sound m, int index, bool iswarmode = false, bool is_login = false)
+        {
+            if (!_canReproduceAudio)
             {
                 return;
             }
@@ -224,7 +275,6 @@ namespace ClassicUO.Game.Managers
                 return;
             }
 
-            Sound m = SoundsLoader.Instance.GetMusic(music);
 
             if (m == null && _currentMusic[0] != null)
             {
@@ -235,7 +285,7 @@ namespace ClassicUO.Game.Managers
                 StopMusic();
 
                 int idx = iswarmode ? 1 : 0;
-                _currentMusicIndices[idx] = music;
+                _currentMusicIndices[idx] = index;
                 _currentMusic[idx] = (UOMusic) m;
 
                 _currentMusic[idx].Play(Time.Ticks, volume);

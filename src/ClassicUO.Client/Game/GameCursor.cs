@@ -166,7 +166,7 @@ namespace ClassicUO.Game
             {
                 _needGraphicUpdate = false;
 
-                if (AllowDrawSDLCursor && Settings.GlobalSettings.RunMouseInASeparateThread)
+                if (AllowDrawSDLCursor && Configuration.Settings.GlobalSettings.RunMouseInASeparateThread)
                 {
                     ushort id = Graphic;
 
@@ -336,6 +336,42 @@ namespace ClassicUO.Game
 
                     _aura.Draw(sb, Mouse.Position.X, Mouse.Position.Y, hue, 0f);
                 }
+                
+                if (TargetManager.Preview > 0)
+                {
+                    float scale = 1;
+
+                    if (ProfileManager.CurrentProfile != null && ProfileManager.CurrentProfile.ScaleItemsInsideContainers)
+                    {
+                        scale = UIManager.ContainerScale;
+                    }
+                    var texture = ArtLoader.Instance.GetStaticTexture((uint)TargetManager.Preview, out var bounds);
+
+                    if (texture != null)
+                    {
+
+                        int x = (Mouse.Position.X) + 20;
+                        int y = (Mouse.Position.Y) + -20;
+
+                        Vector3 hue = ShaderHueTranslator.GetHueVector(TargetManager.PreviewHue, false, false ? .5f : 1f);
+
+                        var rect = new Rectangle
+                        (
+                            x,
+                            y,
+                            (int)(bounds.Width * scale),
+                            (int)(bounds.Height * scale)
+                        );
+
+                        sb.Draw
+                        (
+                            texture,
+                            rect,
+                            bounds,
+                            hue
+                        );
+                    }
+                }
 
                 if (ProfileManager.CurrentProfile.ShowTargetRangeIndicator)
                 {
@@ -416,7 +452,7 @@ namespace ClassicUO.Game
 
             DrawToolTip(sb, Mouse.Position);
 
-            if (!Settings.GlobalSettings.RunMouseInASeparateThread)
+            if (!Configuration.Settings.GlobalSettings.RunMouseInASeparateThread)
             {
                 Graphic = AssignGraphicByState();
 

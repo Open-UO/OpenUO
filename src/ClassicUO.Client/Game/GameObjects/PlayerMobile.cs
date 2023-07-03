@@ -47,6 +47,9 @@ namespace ClassicUO.Game.GameObjects
     internal class PlayerMobile : Mobile
     {
         private readonly Dictionary<BuffIconType, BuffIcon> _buffIcons = new Dictionary<BuffIconType, BuffIcon>();
+        
+        private readonly Dictionary<uint, EnhancedBuffIcon> _enhancedBuffIcons = new Dictionary<uint, EnhancedBuffIcon>();
+        private readonly List<CooldownTimer> _cooldownTimers = new List<CooldownTimer>();
 
         public PlayerMobile(uint serial) : base(serial)
         {
@@ -62,6 +65,8 @@ namespace ClassicUO.Game.GameObjects
         public Skill[] Skills { get; }
         public override bool InWarMode { get; set; }
         public IReadOnlyDictionary<BuffIconType, BuffIcon> BuffIcons => _buffIcons;
+        public IReadOnlyDictionary<uint, EnhancedBuffIcon> EnhancedBuffIcons => _enhancedBuffIcons;
+        public List<CooldownTimer> CooldownTimers => _cooldownTimers;
 
         public ref Ability PrimaryAbility => ref Abilities[0];
         public ref Ability SecondaryAbility => ref Abilities[1];
@@ -251,6 +256,11 @@ namespace ClassicUO.Game.GameObjects
         {
             _buffIcons[type] = new BuffIcon(type, graphic, time, text);
         }
+        
+        public void AddBuff(uint serial, ushort stacks, uint graphic, double time, string text)
+        {
+            _enhancedBuffIcons[serial] = new EnhancedBuffIcon(serial, stacks, graphic, time, text);
+        }
 
 
         public bool IsBuffIconExists(BuffIconType graphic)
@@ -261,6 +271,11 @@ namespace ClassicUO.Game.GameObjects
         public void RemoveBuff(BuffIconType graphic)
         {
             _buffIcons.Remove(graphic);
+        }
+
+        public void RemoveBuff(uint serial)
+        {
+            _enhancedBuffIcons.Remove(serial);
         }
 
         public void UpdateAbilities()
@@ -1564,7 +1579,7 @@ namespace ClassicUO.Game.GameObjects
             }
 
             sbyte oldZ = z;
-            ushort walkTime = Constants.TURN_DELAY;
+            ushort walkTime = World.Player.TurnDelay;
 
             if ((oldDirection & Direction.Mask) == (direction & Direction.Mask))
             {

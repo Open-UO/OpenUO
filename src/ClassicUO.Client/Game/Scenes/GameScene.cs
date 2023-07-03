@@ -87,6 +87,7 @@ namespace ClassicUO.Game.Scenes
         private long _alphaTimer;
         private bool _forceStopScene;
         private HealthLinesManager _healthLinesManager;
+        private SelectedMobileManager _selectedMobileManager;
 
         private Point _lastSelectedMultiPositionInHouseCustomization;
         private int _lightCount;
@@ -140,6 +141,7 @@ namespace ClassicUO.Game.Scenes
             InfoBars = new InfoBarManager();
             InfoBars.Load();
             _healthLinesManager = new HealthLinesManager();
+            _selectedMobileManager = new SelectedMobileManager();
             Weather = new Weather();
 
             WorldViewportGump viewport = new WorldViewportGump(this);
@@ -155,8 +157,11 @@ namespace ClassicUO.Game.Scenes
             NetClient.Socket.Disconnected += SocketOnDisconnected;
             MessageManager.MessageReceived += ChatOnMessageReceived;
             UIManager.ContainerScale = ProfileManager.CurrentProfile.ContainersScale / 100f;
-
-            SDL.SDL_SetWindowMinimumSize(Client.Game.Window.Handle, 640, 480);
+            //TODO: search for enhanced game file
+            if (false)
+                SDL.SDL_SetWindowMinimumSize(Client.Game.Window.Handle, 640, 480);
+            else
+                SDL.SDL_SetWindowMinimumSize(Client.Game.Window.Handle, 1024, 768);
 
             if (ProfileManager.CurrentProfile.WindowBorderless)
             {
@@ -1173,6 +1178,7 @@ namespace ClassicUO.Game.Scenes
         public void DrawOverheads(UltimaBatcher2D batcher)
         {
             _healthLinesManager.Draw(batcher);
+            _selectedMobileManager.Draw(batcher);
 
             if (!UIManager.IsMouseOverWorld)
             {

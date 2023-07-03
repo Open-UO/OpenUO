@@ -31,7 +31,9 @@
 #endregion
 
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Xna.Framework;
 
 namespace ClassicUO.IO
 {
@@ -52,6 +54,8 @@ namespace ClassicUO.IO
         }
 
         public UOFileIndex[] Entries;
+        public Dictionary<int, byte[]> ResourcesOverride = new Dictionary<int, byte[]>();
+        public Game Game;
 
         public abstract Task Load();
 

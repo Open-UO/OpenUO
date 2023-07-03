@@ -36,6 +36,7 @@ namespace ClassicUO.Game
     {
         Next = 0,
         Previous,
-        Nearest
+        Nearest,
+        NearestCursor,
     }
 }

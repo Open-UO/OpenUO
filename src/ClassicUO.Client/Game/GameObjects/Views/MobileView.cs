@@ -158,6 +158,24 @@ namespace ClassicUO.Game.GameObjects
                     }
                 }
             }
+            
+            
+            
+            if (World.PlayableArea != null)
+            {
+                if (World.PlayableArea.HighLightObject(X,Y, out ushort newHue))
+                {
+                    hueVec.Y = 1;
+                    overridedHue = newHue;
+                }
+            }
+
+            if (TargetManager.AreaOfEffectHighlight(X, Y, out ushort rehue))
+            {
+                overridedHue = rehue;
+                hueVec.Y = 1;
+            }
+
 
 
             bool isAttack = Serial == TargetManager.LastAttack;
@@ -180,7 +198,11 @@ namespace ClassicUO.Game.GameObjects
             ushort graphic = GetGraphicForAnimation();
             byte animGroup = GetGroupForAnimation(this, graphic, true);
             byte animIndex = AnimIndex;
-
+            if (World.Settings.ClientOptionFlags.NoWalkAnimationOption && 
+                ProfileManager.CurrentProfile.NoWalkingAnimation && 
+                (IsWalking || Time.Ticks - LastStepTime < 1000))
+                animIndex = 0;
+            
             Item mount = FindItemByLayer(Layer.Mount);
             sbyte mountOffsetY = 0;
 

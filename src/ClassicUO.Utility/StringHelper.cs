@@ -35,6 +35,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Security;
 using System.Text;
+using System.Text.RegularExpressions;
 using SDL2;
 
 namespace ClassicUO.Utility
@@ -166,6 +167,26 @@ namespace ClassicUO.Utility
 
             return char.ToUpper(str[0]) + str.Substring(1);
         }
+        public static string[] CamelSpace(this string[] strings)
+        {
+            for (int i = 0; i < strings.Length; i++)
+            {
+                strings[i] = Regex.Replace(strings[i], @"\B[A-Z]", m => " " + m);
+            }
+
+            return strings;
+        }
+        
+        public static string CamelSpace(this string s)
+        {
+            for (int i = 0; i < s.Length; i++)
+            {
+                s = Regex.Replace(s, @"\B[A-Z]", m => " " + m);
+            }
+
+            return s;
+        }
+
 
 
         public static string CapitalizeAllWords(string str)

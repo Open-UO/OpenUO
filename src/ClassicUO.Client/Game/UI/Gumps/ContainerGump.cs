@@ -481,6 +481,9 @@ namespace ClassicUO.Game.UI.Gumps
         {
             base.Restore(xml);
             // skip loading
+            
+            if (LocalSerial == 0)
+                LocalSerial = World.Player.FindItemByLayer(Layer.Backpack).Serial;
 
             Client.Game.GetScene<GameScene>()?.DoubleClickDelayed(LocalSerial);
 

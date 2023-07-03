@@ -36,6 +36,7 @@ using ClassicUO.Renderer;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
+using ClassicUO.Game.Managers;
 
 namespace ClassicUO.Game.GameObjects
 {
@@ -64,6 +65,18 @@ namespace ClassicUO.Game.GameObjects
             {
                 hue = Constants.DEAD_RANGE_COLOR;
             }
+            
+            
+            if (World.PlayableArea != null)
+            {
+                if (World.PlayableArea.HighLightObject(X,Y, out ushort newHue))
+                {
+                    hue = newHue;
+                }
+            }
+
+            if (TargetManager.AreaOfEffectHighlight(X, Y, out ushort rehue))
+                hue = rehue;
 
             Vector3 hueVec;
             if (hue != 0)

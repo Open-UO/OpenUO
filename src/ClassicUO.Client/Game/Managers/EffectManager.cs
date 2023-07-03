@@ -31,9 +31,11 @@
 #endregion
 
 using System;
+using System.Collections.Generic;
 using ClassicUO.Game.Data;
 using ClassicUO.Game.GameObjects;
 using ClassicUO.Utility.Logging;
+using Microsoft.Xna.Framework;
 
 namespace ClassicUO.Game.Managers
 {
@@ -56,6 +58,16 @@ namespace ClassicUO.Game.Managers
             }
         }
 
+        public void CreateEffect
+        (
+            GraphicEffectType type, uint source, uint target, ushort graphic, ushort hue, ushort srcX, ushort srcY, sbyte srcZ, ushort targetX, ushort targetY, sbyte targetZ,
+            byte speed, int duration, short fixedDir, bool doesExplode, bool hasparticles, GraphicEffectBlendMode blendmode
+        )
+        {
+            CreateEffect(type, source, target, graphic, hue, srcX, srcY, srcZ, targetX, targetY, targetZ,
+                speed, duration, fixedDir, doesExplode, hasparticles, blendmode, 
+                null, 0, null);
+        }
 
         public void CreateEffect
         (
@@ -72,10 +84,13 @@ namespace ClassicUO.Game.Managers
             sbyte targetZ,
             byte speed,
             int duration,
-            bool fixedDir,
+            short fixedDir,
             bool doesExplode,
             bool hasparticles,
-            GraphicEffectBlendMode blendmode
+            GraphicEffectBlendMode blendmode,
+            TimeSpan? durationTimeSpan,
+            short spinning,
+            List<Tuple<TimeSpan,Vector3>> points
         )
         {
             if (hasparticles)
@@ -119,9 +134,82 @@ namespace ClassicUO.Game.Managers
                         targetZ,
                         graphic,
                         hue,
-                        fixedDir,
+                        fixedDir != -1,
                         duration,
                         speed
+                    )
+                    {
+                        Blend = blendmode,
+                        CanCreateExplosionEffect = doesExplode
+                    };
+
+                    break;
+                
+                
+                case GraphicEffectType.MovingTimed:
+                    if (graphic <= 0)
+                    {
+                        return;
+                    }
+
+                    // TODO: speed == 0 means run at standard frameInterval got from anim.mul?
+                    if (speed == 0)
+                    {
+                        speed++;
+                    }
+
+                    effect = new MovingEffectTimed
+                    (
+                        this,
+                        source,
+                        target,
+                        srcX,
+                        srcY,
+                        srcZ,
+                        targetX,
+                        targetY,
+                        targetZ,
+                        graphic,
+                        hue,
+                        fixedDir,
+                        duration,
+                        speed,
+                        durationTimeSpan.Value,
+                        spinning
+                    )
+                    {
+                        Blend = blendmode,
+                        CanCreateExplosionEffect = doesExplode
+                    };
+
+                    break;
+                
+                case GraphicEffectType.MultiPathTimed:
+                    if (graphic <= 0)
+                    {
+                        return;
+                    }
+
+                    // TODO: speed == 0 means run at standard frameInterval got from anim.mul?
+                    if (speed == 0)
+                    {
+                        speed++;
+                    }
+
+                    effect = new MovingEffectMultiPoint
+                    (
+                        this,
+                        source,
+                        srcX,
+                        srcY,
+                        srcZ,
+                        graphic,
+                        hue,
+                        fixedDir,
+                        duration,
+                        speed,
+                        spinning,
+                        points
                     )
                     {
                         Blend = blendmode,

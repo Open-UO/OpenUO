@@ -220,12 +220,11 @@ namespace ClassicUO.IO
             }
 
             BinaryPrimitives.TryReadUInt32BigEndian(_data.Slice(Position), out uint v);
-
             Skip(4);
 
             return v;
         }
-
+        
         [MethodImpl(IMPL_OPTION)]
         public int ReadInt32BE()
         {

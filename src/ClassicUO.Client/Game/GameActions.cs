@@ -201,6 +201,22 @@ namespace ClassicUO.Game
                 worldMap.SetInScreen();
             }
         }
+        
+        public static void OpenCooldowns()
+        {
+            CooldownTimersGump cooldownTimersGump = UIManager.GetGump<CooldownTimersGump>();
+
+            if (cooldownTimersGump == null || cooldownTimersGump.IsDisposed)
+            {
+                cooldownTimersGump = new CooldownTimersGump(50, 50);
+                UIManager.Add(cooldownTimersGump);
+            }
+            else
+            {
+                cooldownTimersGump.BringOnTop();
+                cooldownTimersGump.SetInScreen();
+            }
+        }
 
         public static void OpenChat()
         {
@@ -662,6 +678,50 @@ namespace ClassicUO.Game
                 Socket.Send_CastSpell(index);
             }
         }
+        
+        public static void CastSpellWithTarget(int index, uint target)
+        {
+            if (index >= 0)
+            {
+                LastSpellIndex = index;
+                Socket.Send_CastSpellWithTarget(index, target);
+            }
+        }
+        
+        public static void DrinkPotion(int id)
+        {
+            Socket.Send_DrinkPotion(id);
+        }
+        
+        public static void UseAbilityBySlot(int slot, int ability)
+        {
+            Socket.Send_UseActiveBySlot(slot, ability);
+        }
+
+        public static void StunToggle()
+        {
+            Socket.Send_StunRequest();
+        }
+        
+        public static void ResyncWithServer()
+        {
+            Socket.Send_Resync();
+        }
+
+        public static void DisarmToggle()
+        {
+            Socket.Send_DisarmRequest();
+        }
+
+        public static void CastSpellWithTarget(int index, uint target, uint benTarget)
+        {
+            if (index >= 0)
+            {
+                LastSpellIndex = index;
+                Socket.Send_CastSpellWithTarget(index, target, benTarget);
+            }
+        }
+
 
         public static void OpenGuildGump()
         {

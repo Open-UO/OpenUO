@@ -676,6 +676,7 @@ namespace ClassicUO.Game.Managers
         SelectNext,
         SelectPrevious,
         SelectNearest,
+        SelectedNearestCursor,
 
         #endregion
 

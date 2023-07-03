@@ -59,6 +59,9 @@ namespace ClassicUO.Game.Managers
         public static AnchorManager AnchorManager { get; } = new AnchorManager();
 
         public static LinkedList<Gump> Gumps { get; } = new LinkedList<Gump>();
+        
+
+        public static List<Tuple<Rectangle, ushort, byte>> HighlightedAreas = new List<Tuple<Rectangle, ushort, byte>>();
 
         public static Control MouseOverControl { get; private set; }
 

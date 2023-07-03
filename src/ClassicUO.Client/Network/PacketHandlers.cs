@@ -305,6 +305,7 @@ namespace ClassicUO.Network
             Handler.Add(0xF5, DisplayMap);
             Handler.Add(0xF6, BoatMoving);
             Handler.Add(0xF7, PacketList);
+            Handler.Add(0xC3, EnhancedPacketHandler.OpenUOEnhancedRx);
 
             // login
             Handler.Add(0xA8, ServerListReceived);
@@ -1231,7 +1232,7 @@ namespace ClassicUO.Network
                 sourceX, sourceY, sourceZ,
                 destX, destY, destZ,
                 5, 5000,
-                true,
+                0,
                 false,
                 false,
                 GraphicEffectBlendMode.Normal
@@ -2407,7 +2408,7 @@ namespace ClassicUO.Network
                 targetZ,
                 speed,
                 duration,
-                fixedDirection,
+                (short) (fixedDirection == false ? -1 : 0),
                 doesExplode,
                 false,
                 blendmode
@@ -3303,7 +3304,7 @@ namespace ClassicUO.Network
             ushort multiID = p.ReadUInt16BE();
             ushort xOff = p.ReadUInt16BE();
             ushort yOff = p.ReadUInt16BE();
-            ushort zOff = p.ReadUInt16BE();
+            short zOff = p.ReadInt16BE();
             ushort hue = p.ReadUInt16BE();
 
             TargetManager.SetTargetingMulti
@@ -5462,12 +5463,20 @@ namespace ClassicUO.Network
 
             if (iconID < BuffTable.Table.Length)
             {
-                BuffGump gump = UIManager.GetGump<BuffGump>();
+                Gump gump = null;
+                var enhanced = World.Settings.GeneralFlags.EnhancedBuffInformation;
+                if (enhanced)
+                    gump = UIManager.GetGump<EnhancedBuffGump>();
+                else
+                    gump = UIManager.GetGump<BuffGump>();
                 ushort count = p.ReadUInt16BE();
 
                 if (count == 0)
                 {
-                    World.Player.RemoveBuff(ic);
+                    if (enhanced)
+                        World.Player.RemoveBuff((uint)ic);
+                    else
+                        World.Player.RemoveBuff(ic);
                     gump?.RequestUpdateContents();
                 }
                 else
@@ -5522,7 +5531,10 @@ namespace ClassicUO.Network
 
                         string text = $"<left>{title}{description}{wtf}</left>";
                         bool alreadyExists = World.Player.IsBuffIconExists(ic);
-                        World.Player.AddBuff(ic, BuffTable.Table[iconID], timer, text);
+                        if (!enhanced)
+                            World.Player.AddBuff(ic, BuffTable.Table[iconID], timer, text);
+                        else
+                            World.Player.AddBuff((uint)ic, 1, BuffTable.Table[iconID], timer, text);
 
                         if (!alreadyExists)
                         {

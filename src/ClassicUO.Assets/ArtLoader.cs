@@ -37,6 +37,7 @@ using Microsoft.Xna.Framework.Graphics;
 using SDL2;
 using System;
 using System.IO;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace ClassicUO.Assets
@@ -58,6 +59,75 @@ namespace ClassicUO.Assets
 
         public static ArtLoader Instance => _instance ?? (_instance = new ArtLoader(MAX_STATIC_DATA_INDEX_COUNT, MAX_LAND_DATA_INDEX_COUNT));
 
+        public Task OverrideTextures()
+        {
+            return Task.Run
+            (
+                () =>
+                {
+                    Console.WriteLine("Loading Art Overrides");
+
+                    try
+                    {
+                        string[] loadOverrideFiles = UOFileManager.GetUOFiles("./override/art", "*.*");
+
+                        foreach (string filename in loadOverrideFiles)
+                        {
+                            Console.WriteLine($"Found Override File: {filename}");
+
+                            try
+                            {
+                                if (Regex.IsMatch(filename, @".png|.jpg|.gif"))
+                                {
+                                    var loadedFile = Path.GetFileName(filename);
+                                    string[] toBeTrimmed = { ".jpg", ".png", ".gif" };
+
+                                    foreach (string format in toBeTrimmed)
+                                        if (loadedFile.EndsWith(format))
+                                        {
+                                            loadedFile = loadedFile.Substring(0, loadedFile.LastIndexOf(format));
+
+                                            break; //only allow one match at most
+                                        }
+
+                                    int overrideFileToHex = Convert.ToInt32(loadedFile, 16);
+
+                                    using (var imageStream = File.OpenRead(filename))
+                                    {
+                                        try
+                                        {
+                                            Console.WriteLine($"Loading override index: {overrideFileToHex} file: {filename}");
+                                            ResourcesOverride[overrideFileToHex + 0x4000] = File.ReadAllBytes(filename);
+                                            //ResourcesOverride[overrideFileToHex] = Texture2D.FromStream(Client.Game.GraphicsDevice, imageStream);
+                                            //ResourcesOverride[overrideFileToHex] = File.ReadAllBytes(filename);
+                                            Console.WriteLine($"Finished override index: {overrideFileToHex} file {filename}");
+                                        }
+                                        catch (FileNotFoundException e)
+                                        {
+                                            Console.WriteLine(e);
+                                        }
+                                        catch (Exception e)
+                                        {
+                                            Console.WriteLine(e);
+                                        }
+                                    }
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                Console.WriteLine($"Exception Loading Overrided File: {filename} {e.Message}");
+                            }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine($"Exception getting override list: {e.Message}");
+                    }
+
+                    Console.WriteLine("Finished loading Art Overrides");
+                }
+            );
+        }
 
         public override Task Load()
         {
@@ -102,10 +172,10 @@ namespace ClassicUO.Assets
 
         private bool LoadData(Span<uint> data, int g, out short width, out short height, bool isTerrain)
         {
-            ref UOFileIndex entry = ref GetValidRefEntry(g);
 
             if (isTerrain)
             {
+                ref UOFileIndex entry = ref GetValidRefEntry(g);
                 if (entry.Length == 0)
                 {
                     width = 0;
@@ -156,51 +226,98 @@ namespace ClassicUO.Assets
             }
             else
             {
-                if (ReadHeader(_file, ref entry, out width, out height))
+                int index = g;
+                if (ResourcesOverride.ContainsKey(index) && Game != null && Game.GraphicsDevice != null)
                 {
+                    var entry = Texture2D.FromStream(Game.GraphicsDevice, new MemoryStream(ResourcesOverride[index]));
+                    
+                    ref var spriteInfo = ref _spriteInfos[g];
+                    //Span<uint> pixels = entry.Width * entry.Height <= 1024 ? stackalloc uint[1024] : (buffer = System.Buffers.ArrayPool<uint>.Shared.Rent(entry.Width * entry.Height));
+
+                    width = (short)entry.Width;
+                    height = (short)entry.Height;
+
                     if (data.Length < (width * height))
-                    {
                         return false;
-                    }
+                    
+                    //spriteInfo.Texture = entry;
+                    //spriteInfo.UV = new Rectangle(0,0, entry.Width, entry.Height);
 
-                    /* 
-                     * Since the data is run-length-encoded, we may not actually read
-                     * into every pixel in 'data'. We must zero the buffer here since it is
-                     * re-used. But we only have to zero out the (width * height) worth.
-                     */
-                    data.Slice(0, (width * height)).Fill(0);
+                    Console.WriteLine($"overriding {index} {entry.Width} x {entry.Height}");
+                    //Span<uint> pixels = entry.Width * entry.Height <= 1024 ? stackalloc uint[1024] : (buffer = System.Buffers.ArrayPool<uint>.Shared.Rent(entry.Width * entry.Height));
 
-                    ushort fixedGraphic = (ushort)(g - 0x4000);
-
-                    if (ReadData(data, width, height, _file))
+                    //
+                    //buffer = System.Buffers.ArrayPool<uint>.Shared.Rent(width * height);
+                    uint[] buffer = new uint[width*height];
+                    entry.GetData<uint>(buffer);
+                    ref UOFileIndex zentry = ref GetValidRefEntry(g);
+                    try
                     {
-                        // keep the cursor graphic check to cleanup edges
-                        if ((fixedGraphic >= 0x2053 && fixedGraphic <= 0x2062) || (fixedGraphic >= 0x206A && fixedGraphic <= 0x2079))
-                        {
-                            for (int i = 0; i < width; i++)
-                            {
-                                data[i] = 0;
-                                data[(height - 1) * width + i] = 0;
-                            }
 
-                            for (int i = 0; i < height; i++)
-                            {
-                                data[i * width] = 0;
-                                data[i * width + width - 1] = 0;
-                            }
-                        }
+                        ushort fixedGraphic = (ushort)(g - 0x4000);
 
-                        ref var spriteInfo = ref _spriteInfos[g];
-
+                        buffer.CopyTo(data);
                         FinalizeData
                         (
-                            data,
-                            ref entry,
-                            fixedGraphic,
-                            width,
-                            height,
-                            out spriteInfo.ArtBounds
+                            data, ref zentry, fixedGraphic, width,
+                            height, out spriteInfo.ArtBounds
                         );
+
+                        //_picker.Set(fixedGraphic, entry.Width, entry.Height, artPixels);
+                        
+                        //artPixels.CopyTo(data);
+                        //data = buffer;
+                        //spriteInfo.Texture = atlas.AddSprite(artPixels, entry.Width, entry.Height, out spriteInfo.UV);
+                    }
+                    finally
+                    {
+                        //if (buffer != null)
+                        //{
+                        //    System.Buffers.ArrayPool<uint>.Shared.Return(buffer, true);
+                        //}
+                    }
+                }
+                else
+                {
+                    ref UOFileIndex entry = ref GetValidRefEntry(g);
+                    if (ReadHeader(_file, ref entry, out width, out height))
+                    {
+                        if (data.Length < (width * height))
+                        {
+                            return false;
+                        }
+
+                        /* 
+                         * Since the data is run-length-encoded, we may not actually read
+                         * into every pixel in 'data'. We must zero the buffer here since it is
+                         * re-used. But we only have to zero out the (width * height) worth.
+                         */
+                        data.Slice(0, (width * height)).Fill(0);
+
+                        ushort fixedGraphic = (ushort)(g - 0x4000);
+
+                        if (ReadData(data, width, height, _file))
+                        {
+                            // keep the cursor graphic check to cleanup edges
+                            if ((fixedGraphic >= 0x2053 && fixedGraphic <= 0x2062) || (fixedGraphic >= 0x206A && fixedGraphic <= 0x2079))
+                            {
+                                for (int i = 0; i < width; i++)
+                                {
+                                    data[i] = 0;
+                                    data[(height - 1) * width + i] = 0;
+                                }
+
+                                for (int i = 0; i < height; i++)
+                                {
+                                    data[i * width] = 0;
+                                    data[i * width + width - 1] = 0;
+                                }
+                            }
+
+                            ref var spriteInfo = ref _spriteInfos[g];
+
+                            FinalizeData(data, ref entry, fixedGraphic, width, height, out spriteInfo.ArtBounds);
+                        }
                     }
                 }
             }

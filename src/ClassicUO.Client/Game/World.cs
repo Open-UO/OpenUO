@@ -30,6 +30,7 @@
 
 #endregion
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using ClassicUO.IO.Audio;
@@ -45,6 +46,7 @@ using ClassicUO.Configuration;
 using ClassicUO.Game.Scenes;
 using ClassicUO.Utility.Logging;
 using ClassicUO.Assets;
+using ClassicUO.Input;
 
 namespace ClassicUO.Game
 {
@@ -57,6 +59,8 @@ namespace ClassicUO.Game
         public static Point RangeSize;
 
         public static PlayerMobile Player { get; private set; }
+        
+        public static PlayableAreaInformation PlayableArea { get; set; }
 
         public static HouseCustomizationManager CustomHouseManager;
 
@@ -65,6 +69,8 @@ namespace ClassicUO.Game
         public static ActiveSpellIconsManager ActiveSpellIcons = new ActiveSpellIconsManager();
 
         public static uint LastObject, ObjectToRemove;
+
+        public static OpenUOSettings Settings = new OpenUOSettings();
 
         public static ObjectPropertiesListManager OPL { get; } = new ObjectPropertiesListManager();
 
@@ -77,6 +83,8 @@ namespace ClassicUO.Game
         public static Dictionary<uint, Item> Items { get; } = new Dictionary<uint, Item>();
 
         public static Dictionary<uint, Mobile> Mobiles { get; } = new Dictionary<uint, Mobile>();
+        
+        public static Dictionary<uint,SpecialHealthBarData> HealthBarEntities { get; } = new Dictionary<uint,SpecialHealthBarData>();
 
         public static Map.Map Map { get; private set; }
 
@@ -564,7 +572,7 @@ namespace ClassicUO.Game
             sbyte targetZ,
             byte speed,
             int duration,
-            bool fixedDir,
+            short fixedDir,
             bool doesExplode,
             bool hasparticles,
             GraphicEffectBlendMode blendmode
@@ -591,6 +599,216 @@ namespace ClassicUO.Game
                 blendmode
             );
         }
+        
+        public static void SpawnEffect
+        (
+            GraphicEffectType type,
+            uint source,
+            uint target,
+            ushort graphic,
+            ushort hue,
+            ushort srcX,
+            ushort srcY,
+            sbyte srcZ,
+            ushort targetX,
+            ushort targetY,
+            sbyte targetZ,
+            byte speed,
+            int duration,
+            short fixedDir,
+            bool doesExplode,
+            bool hasparticles,
+            GraphicEffectBlendMode blendmode,
+            TimeSpan? durationTimeSpan,
+            short spinning,
+            List<Tuple<TimeSpan,Vector3>> points
+        )
+        {
+            _effectManager.CreateEffect
+            (
+                type,
+                source,
+                target,
+                graphic,
+                hue,
+                srcX,
+                srcY,
+                srcZ,
+                targetX,
+                targetY,
+                targetZ,
+                speed,
+                duration,
+                fixedDir,
+                doesExplode,
+                hasparticles,
+                blendmode,
+                durationTimeSpan,
+                spinning,
+                points
+            );
+        }
+        
+        public static uint SallosFindNearest()
+        {
+            int distance = int.MaxValue;
+            uint serial = 0;
+
+            bool any = false;
+
+            if (World.Player.NotorietyFlag == NotorietyFlag.Murderer)
+            {
+                any = true;
+            }
+
+            bool anyOrange = false;
+
+            {
+                foreach (Mobile mobile in Mobiles.Values)
+                {
+                    if (mobile.IsDestroyed || mobile == Player || !mobile.IsHuman || mobile.NotorietyFlag == NotorietyFlag.Invulnerable)
+                    {
+                        continue;
+                    }
+
+                    if (FriendManager.FriendList.ContainsKey(mobile.Serial))
+                        continue;
+
+                    if (Party.Contains(mobile))
+                    {
+                        continue;
+                    }
+
+                    if (mobile.NotorietyFlag == NotorietyFlag.Ally)
+                        continue;
+
+                    if (!any && mobile.NotorietyFlag == NotorietyFlag.Innocent)
+                        continue;
+
+                    if (mobile.NotorietyFlag == NotorietyFlag.Enemy && !anyOrange && !any)
+                    {
+                        anyOrange = true;
+                        distance = mobile.Distance;
+                        serial = mobile.Serial;
+
+                        continue;
+                    }
+
+                    if (anyOrange)
+                    {
+                        if (mobile.NotorietyFlag == NotorietyFlag.Enemy && mobile.Distance < distance)
+                        {
+                            distance = mobile.Distance;
+                            serial = mobile.Serial;
+                        }
+                        continue;
+                    }
+
+                    /*switch (scanType)
+                    {
+                        case ScanTypeObject.Party:
+                            if (!Party.Contains(mobile))
+                            {
+                                continue;
+                            }
+                            break;
+                        case ScanTypeObject.Followers:
+                            if (!(mobile.IsRenamable && mobile.NotorietyFlag != NotorietyFlag.Invulnerable && mobile.NotorietyFlag != NotorietyFlag.Enemy))
+                            {
+                                continue;
+                            }
+                            break;
+                        case ScanTypeObject.Hostile:
+                            if (mobile.NotorietyFlag == NotorietyFlag.Ally || mobile.NotorietyFlag == NotorietyFlag.Innocent || mobile.NotorietyFlag == NotorietyFlag.Invulnerable)
+                            {
+                                continue;
+                            }
+                            break;
+                        case ScanTypeObject.Objects:
+                            /* This was handled separately above */
+                    /*       continue;
+                   }*/
+
+                    if (mobile.Distance < distance)
+                    {
+                        distance = mobile.Distance;
+                        serial = mobile.Serial;
+                    }
+                }
+            }
+
+            return serial;
+        }
+
+        public static uint FindNearestCursor(ScanTypeObject scanType)
+        {
+            double distance = double.MaxValue;
+            uint serial = 0;
+
+            if (scanType == ScanTypeObject.Objects)
+            {
+                foreach (Item item in Items.Values)
+                {
+                    if (item.IsMulti || item.IsDestroyed || !item.OnGround)
+                    {
+                        continue;
+                    }
+                    double mouseRange = MathHelper.Hypotenuse(item.RealScreenPosition.X - Mouse.Position.X, item.RealScreenPosition.Y - Mouse.Position.Y);
+                    if (mouseRange < distance)
+                    {
+                        distance = mouseRange;
+                        serial = item.Serial;
+                    }
+                }
+            }
+            else
+            {
+                foreach (Mobile mobile in Mobiles.Values)
+                {
+                    if (mobile.IsDestroyed || mobile == Player)
+                    {
+                        continue;
+                    }
+
+                    switch (scanType)
+                    {
+                        case ScanTypeObject.Party:
+                            if (!Party.Contains(mobile))
+                            {
+                                continue;
+                            }
+                            break;
+                        case ScanTypeObject.Followers:
+                            if (!(mobile.IsRenamable && mobile.NotorietyFlag != NotorietyFlag.Invulnerable && mobile.NotorietyFlag != NotorietyFlag.Enemy))
+                            {
+                                continue;
+                            }
+                            break;
+                        case ScanTypeObject.Hostile:
+                            if (mobile.NotorietyFlag == NotorietyFlag.Ally || mobile.NotorietyFlag == NotorietyFlag.Innocent || mobile.NotorietyFlag == NotorietyFlag.Invulnerable)
+                            {
+                                continue;
+                            }
+                            break;
+                        case ScanTypeObject.Objects:
+                            /* This was handled separately above */
+                            continue;
+                    }
+                    double mouseRange = MathHelper.Hypotenuse(mobile.RealScreenPosition.X - Mouse.Position.X, mobile.RealScreenPosition.Y - Mouse.Position.Y);
+
+                    if (mouseRange < distance)
+                    {
+                        distance = mouseRange;
+                        serial = mobile.Serial;
+                    }
+                }
+            }
+
+            return serial;
+        }
+
+
+
 
         public static uint FindNearest(ScanTypeObject scanType)
         {

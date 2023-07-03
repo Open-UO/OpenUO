@@ -1,0 +1,108 @@
+﻿{
+  "clilocs": [
+    {
+      "id": 8000000,
+      "data": "<CENTER><BASEFONT COLOR=#FFFFFF>OpenUO Example Functionality</BASEFONT></CENTER>"
+    },
+    {
+      "id": 8000001,
+      "data": "<BASEFONT COLOR=#FFFFFF>Try it out</BASEFONT>"
+    },
+    {
+      "id": 8000002,
+      "data": "<BASEFONT COLOR=#FFFFFF>Date Released: ~1_VAL~</BASEFONT>"
+    },
+    {
+      "id": 8000003,
+      "data": "<RIGHT><BASEFONT COLOR=#FFFFFF>(~1_VAL~/~2_VAL~)</BASEFONT>"
+    },
+    {
+      "id": 8000004,
+      "data": "<BASEFONT COLOR=#FF5555>Disabled Due to Options</BASEFONT>"
+    },
+    {
+      "id": 8000030,
+      "data": "Slot not found"
+    },
+    {
+      "id": 8000031,
+      "data": "Ability not found"
+    },
+    {
+      "id": 8000500,
+      "data": "<CENTER><BASEFONT COLOR=#FFFFFF>Enhanced Abilities</BASEFONT></CENTER>"
+    },
+    {
+      "id": 8000501,
+      "data": "Enhanced Abilities are a menu that appears on your player's client that uses custom packets to make it look like a modern looking HUD. <BR><BR>Cooldowns are displayed on the menu. <BR>Abilities can have a set amount of charges.<BR>They can be set to be used next move.<BR>They can be used to take your players to a next level experience.<BR><BR>Associated Settings:<BR>General Settings - EnableEnhancedAbilities<BR>Macro Settings - EnhancedAbilities<BR><BR>Associated Packets:<BR><BR>Client To Server<BR>ID: 3 - Use Ability<BR><BR>Server To Client:<BR>ID: 150 - Update<BR>ID: 151 - Complete Information<BR>"
+    },
+    {
+      "id": 8010000,
+      "data": "OpenUO Example Ability"
+    },
+    {
+      "id": 8010001,
+      "data": "This ability will quickly attack your combatant ~1_VAL~ times per charge when used."
+    },
+    {
+      "id": 8010010,
+      "data": "OpenUO Example Ability Two"
+    },
+    {
+      "id": 8010011,
+      "data": "This ability will cast a spell after a short duration that engulfs the area in fire"
+    },
+    {
+      "id": 8011000,
+      "data": "<CENTER><BASEFONT COLOR=#FFFFFF>Rolling Overhead Text</BASEFONT></CENTER>"
+    },
+    {
+      "id": 8011001,
+      "data": "Rolling texts gives you the option to display quick messages to players to display stat changes or skill or XP changes.<BR>The Messages do not show up in the journal like speech.<BR><BR>May be enhanced in the future with things such as DPS meters.<BR>Uses clilocs to reduce impact on bandwidth.<BR><BR>Players have alot of control over these types of messages through the Options=>Combat-Spells Menu<BR><BR><BR>Associated Settings:<BR>Options - ShowRollingTextOptions<BR><BR>Associated Packets:<BR><BR>Client To Server<BR>None<BR><BR>Server To Client:<BR>ID: 101 - Simple<BR>ID: 100 - Complex<BR>"
+    },
+    {
+      "id": 8011100,
+      "data": "~1_val~ HP"
+    },
+    {
+      "id": 8011101,
+      "data": "~1_val~ Stamina"
+    },
+    {
+      "id": 8011102,
+      "data": "~1_val~ Mana"
+    },
+    {
+      "id": 8011103,
+      "data": "~1_val~ Intelligence"
+    },
+    {
+      "id": 8011104,
+      "data": "~1_val~ Strength"
+    },
+    {
+      "id": 8011105,
+      "data": "~1_val~ Dexterity"
+    },
+    {
+      "id": 8011106,
+      "data": "~1_val~ All Stats"
+    },
+    {
+      "id": 8011107,
+      "data": "~1_val~ ~2_type~ XP"
+    },
+    {
+      "id": 8011108,
+      "data": "~1_val~ ~2_type~"
+    },
+    {
+      "id": 8012000,
+      "data": "<CENTER><BASEFONT COLOR=#FFFFFF>Extra Target Information</BASEFONT></CENTER>"
+    },
+    {
+      "id": 8012001,
+      "data": "Extra Target Information allows you display extra information with your target information.<BR>You can display preview items to appear on the cursor of the mouse.<BR>You can display an Area of Effect range (for fields as well)<BR>You can display tile information to put several items on the ground.<BR><BR>Players have control over the colors of the AoE indicators through Options=>Combat-Spells<BR><BR><BR>Associated Settings:<BR>Options - AreaOfEffectTargetOptions<BR><BR>Associated Packets:<BR><BR>Client To Server<BR>None<BR><BR>Server To Client:<BR>ID: 102 - Extra Target Information<BR>"
+    }
+  ]
+}

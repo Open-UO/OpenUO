@@ -2,9 +2,19 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <ApplicationIcon>cuoicon.ico</ApplicationIcon>
-    <AssemblyName>ClassicUO</AssemblyName>
+    <ApplicationIcon>ouoicon.ico</ApplicationIcon>
+    <AssemblyName>OpenUO</AssemblyName>
     <RootNamespace>ClassicUO</RootNamespace>
+    <PackageId>OpenUO</PackageId>
+    <Version>0.9.0.0</Version>
+    <Authors>Ultima-Tony</Authors>
+    <Description>An open source implementation of the OpenUO Client.</Description>
+    <Copyright>OpenUO</Copyright>
+    <PackageProjectUrl>https://www.openuo.io/</PackageProjectUrl>
+    <Company>OpenUO</Company>
+    <Product>OpenUO</Product>
+    <AssemblyVersion>0.9.0.0</AssemblyVersion>
+    <FileVersion>0.9.0.0</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(IS_DEV_BUILD)' == 'true'">

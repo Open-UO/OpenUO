@@ -139,6 +139,17 @@ namespace ClassicUO.Game.Managers
 
             dm.Add(dmg);
         }
+        
+        internal void AddRollingText(uint obj, ushort hue, byte font, string rollingText)
+        {
+            if (!_damages.TryGetValue(obj, out OverheadDamage dm) || dm == null)
+            {
+                dm = new OverheadDamage(World.Get(obj));
+                _damages[obj] = dm;
+            }
+
+            dm.Add(font, hue, rollingText);
+        }
 
         public override void Clear()
         {

@@ -75,9 +75,9 @@ namespace ClassicUO
                 sb.AppendLine("######################## [START LOG] ########################");
 
 #if DEV_BUILD
-                sb.AppendLine($"ClassicUO [DEV_BUILD] - {CUOEnviroment.Version} - {DateTime.Now}");
+                sb.AppendLine($"OpenUO [DEV_BUILD] - {CUOEnviroment.Version} - {DateTime.Now}");
 #else
-                sb.AppendLine($"ClassicUO [STANDARD_BUILD] - {CUOEnviroment.Version} - {DateTime.Now}");
+                sb.AppendLine($"OpenUO [STANDARD_BUILD] - {CUOEnviroment.Version} - {DateTime.Now}");
 #endif
 
                 sb.AppendLine

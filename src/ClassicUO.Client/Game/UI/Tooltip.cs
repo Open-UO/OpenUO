@@ -322,7 +322,7 @@ namespace ClassicUO.Game.UI
                 Serial = 0;
                 Text = _textHTML = text;
 
-                _lastHoverTime = (uint) (Time.Ticks + (ProfileManager.CurrentProfile != null ? ProfileManager.CurrentProfile.TooltipDelayBeforeDisplay : 250));
+                //_lastHoverTime = (uint) (Time.Ticks + (ProfileManager.CurrentProfile != null ? ProfileManager.CurrentProfile.TooltipDelayBeforeDisplay : 250));
             }
         }
     }

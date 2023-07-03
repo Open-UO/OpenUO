@@ -35,6 +35,7 @@ using ClassicUO.Game.Data;
 using ClassicUO.Game.Scenes;
 using ClassicUO.IO;
 using ClassicUO.Assets;
+using ClassicUO.Game.Managers;
 using ClassicUO.Renderer;
 using Microsoft.Xna.Framework;
 
@@ -86,7 +87,22 @@ namespace ClassicUO.Game.GameObjects
                 hue = Constants.DEAD_RANGE_COLOR;
                 partial = false;
             }
-
+            
+            if (World.PlayableArea != null)
+            {
+                if (World.PlayableArea.HighLightObject(X,Y, out ushort newHue))
+                {
+                    partial = false;
+                    hue = newHue;
+                }
+            }
+            
+            if (TargetManager.AreaOfEffectHighlight(X, Y, out ushort reHue))
+            {
+                partial = false;
+                hue = reHue;
+            }
+            
             Vector3 hueVec = ShaderHueTranslator.GetHueVector(hue, partial, AlphaHue / 255f);
 
             bool isTree = StaticFilters.IsTree(graphic, out _);

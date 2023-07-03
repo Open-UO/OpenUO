@@ -63,10 +63,9 @@ namespace ClassicUO.Game.UI.Controls
 
         public override bool Draw(UltimaBatcher2D batcher, int x, int y)
         {
-            if (Children.Count != 0)
-            {
-                Children[0].Draw(batcher, x, y);
-            }
+            
+            for (int i = 0; i < Children.Count; i++)
+                Children[i].Draw(batcher, x + Children[i].X, y + Children[i].Y);
 
             Vector3 hueVector = ShaderHueTranslator.GetHueVector(Hue);
 

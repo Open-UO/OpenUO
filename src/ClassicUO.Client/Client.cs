@@ -67,6 +67,8 @@ namespace ClassicUO
             using (Game = new GameController())
             {
                 // https://github.com/FNA-XNA/FNA/wiki/7:-FNA-Environment-Variables#fna_graphics_enable_highdpi
+                ArtLoader.Instance.Game = Game;
+                GumpsLoader.Instance.Game = Game;
                 CUOEnviroment.IsHighDPI = Environment.GetEnvironmentVariable("FNA_GRAPHICS_ENABLE_HIGHDPI") == "1";
 
                 if (CUOEnviroment.IsHighDPI)
@@ -179,7 +181,7 @@ namespace ClassicUO
             Log.Trace($"Client path: '{clientPath}'");
             Log.Trace($"Client version: {clientVersion}");
             Log.Trace($"Protocol: {Protocol}");
-
+            
             // ok now load uo files
             UOFileManager.Load(Version, Settings.GlobalSettings.UltimaOnlineDirectory, Settings.GlobalSettings.UseVerdata, Settings.GlobalSettings.Language);
             StaticFilters.Load();

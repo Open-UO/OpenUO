@@ -62,6 +62,9 @@ namespace ClassicUO.Game.UI.Controls
             byte font = 9
         )
         {
+            
+            if (selected >= items.Length)
+                selected = items.Length - 1;
             X = x;
             Y = y;
             Width = width;

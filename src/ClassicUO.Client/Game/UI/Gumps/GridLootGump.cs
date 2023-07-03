@@ -56,7 +56,7 @@ namespace ClassicUO.Game.UI.Gumps
 
         private int _currentPage = 1;
         private readonly Label _currentPageLabel;
-        private readonly Label _corpseNameLabel;
+        private readonly HtmlControl _corpseNameLabel;
         private readonly bool _hideIfEmpty;
         private int _pagesCount;
 
@@ -145,7 +145,7 @@ namespace ClassicUO.Game.UI.Gumps
 
             Add
             (
-                _corpseNameLabel = new Label(GetCorpseName(), true, 0x0481, align: TEXT_ALIGN_TYPE.TS_CENTER, maxwidth:300)
+                _corpseNameLabel = new HtmlControl(0, 0, 300, 40, false, false, false, GetCorpseName(), 0x0481, align: TEXT_ALIGN_TYPE.TS_CENTER, ishtml: true)
                 {
                     Width = 300,
                     X = 0,

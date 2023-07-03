@@ -34,6 +34,7 @@ using System.Collections.Generic;
 using ClassicUO.Assets;
 using ClassicUO.Renderer;
 using ClassicUO.Utility;
+using Microsoft.Xna.Framework;
 
 namespace ClassicUO.Game.UI.Controls
 {
@@ -83,6 +84,8 @@ namespace ClassicUO.Game.UI.Controls
             Y = int.Parse(parts[2]);
             IsFromServer = true;
         }
+        
+        public Point GetTextPosition() => _gText.GetCaretPosition(0);
 
         public string Text
         {

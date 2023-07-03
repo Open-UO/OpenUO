@@ -119,6 +119,9 @@ namespace ClassicUO.Configuration
         public ushort BeneficHue { get; set; } = 0x0059;
         public ushort HarmfulHue { get; set; } = 0x0020;
         public ushort NeutralHue { get; set; } = 0x03B1;
+        public ushort BeneficialAOEHue { get; set; } = 96;
+        public ushort HarmfulAOEHue { get; set; } = 37;
+        public ushort NeutralAOEHue { get; set; } = 980;
         public bool EnabledSpellHue { get; set; }
         public bool EnabledSpellFormat { get; set; }
         public string SpellDisplayFormat { get; set; } = "{power} [{spell}]";
@@ -134,6 +137,8 @@ namespace ClassicUO.Configuration
         public bool UseOldStatusGump { get; set; }
         public int BackpackStyle { get; set; }
         public bool HighlightGameObjects { get; set; }
+        
+        public bool ShowAoEArea { get; set; } = true;
         public bool HighlightMobilesByParalize { get; set; } = true;
         public bool HighlightMobilesByPoisoned { get; set; } = true;
         public bool HighlightMobilesByInvul { get; set; } = true;
@@ -206,7 +211,39 @@ namespace ClassicUO.Configuration
 
         // Experimental
         public bool CastSpellsByOneClick { get; set; }
-        public bool BuffBarTime { get; set; }
+        public bool BuffBarTime { get; set; }        
+        public bool ShowLastTarget { get; set; } = true;
+        public bool SplitLastTarget { get; set; } = true;
+        public bool OffscreenTargeting { get; set; } = true;
+        public bool RollingTextHitPoints { get; set; } = true;
+        public bool RollingTextHitPointsOverride { get; set; } = false;
+        public ushort RollingTextHitPointsOverrideLoss { get; set; } = 32;
+        public ushort RollingTextHitPointsOverrideGain { get; set; } = 0x42;
+
+        public bool RollingTextStamina { get; set; } = true;
+        public bool RollingTextStaminaOverride { get; set; } = false;
+        public ushort RollingTextStaminaOverrideLoss { get; set; } = 0x32;
+        public ushort RollingTextStaminaOverrideGain { get; set; } = 0x32;
+
+        public bool RollingTextMana { get; set; } = true;
+        public bool RollingTextManaOverride { get; set; } = false;
+        public ushort RollingTextManaOverrideLoss { get; set; } = 0x32;
+        public ushort RollingTextManaOverrideGain { get; set; } = 0x32;
+
+        public bool RollingTextStat { get; set; } = true;
+        public bool RollingTextStatOverride { get; set; } = false;
+        public ushort RollingTextStatOverrideLoss { get; set; } = 0x32;
+        public ushort RollingTextStatOverrideGain { get; set; } = 0x32;
+
+        public bool RollingTextOther { get; set; } = true;
+        public bool RollingTextOtherOverride { get; set; } = false;
+        public ushort RollingTextOtherOverrideLoss { get; set; } = 0x32;
+        public ushort RollingTextOtherOverrideGain { get; set; } = 0x32;
+        
+        public int ActiveAbilityGumpX { get; set; } = 0;
+        public int ActiveAbilityGumpY { get; set; } = 0;
+        public int ActiveAbilityGumpSize{ get; set; } = 0;
+        public bool UseFastTurnMovement { get; set; } = false;
         public bool FastSpellsAssign { get; set; }
         public bool AutoOpenDoors { get; set; }
         public bool SmoothDoors { get; set; }
@@ -262,6 +299,8 @@ namespace ClassicUO.Configuration
         public int AuraUnderFeetType { get; set; } // 0 = NO, 1 = in warmode, 2 = ctrl+shift, 3 = always
         public bool AuraOnMouse { get; set; } = true;
         public bool AnimatedWaterEffect { get; set; } = false;
+        
+        public bool NoWalkingAnimation { get; set; } = false;
 
         public bool PartyAura { get; set; }
 
@@ -522,6 +561,11 @@ namespace ClassicUO.Configuration
                             {
                                 case GumpType.Buff:
                                     gump = new BuffGump();
+
+                                    break;
+                                
+                                case GumpType.CooldownTimers:
+                                    gump = new CooldownTimersGump();
 
                                     break;
 

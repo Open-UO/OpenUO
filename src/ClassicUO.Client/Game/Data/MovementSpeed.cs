@@ -43,12 +43,7 @@ namespace ClassicUO.Game.Data
 
         public static int TimeToCompleteMovement(bool run, bool mounted)
         {
-            if (mounted)
-            {
-                return run ? STEP_DELAY_MOUNT_RUN : STEP_DELAY_MOUNT_WALK;
-            }
-
-            return run ? STEP_DELAY_RUN : STEP_DELAY_WALK;
+            return run ? World.Player.RunningMoveSpeed : World.Player.WalkingMoveSpeed;
         }
 
         public static void GetPixelOffset(byte dir, ref float x, ref float y, float framesPerTile)

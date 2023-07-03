@@ -40,11 +40,18 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace ClassicUO.Assets
 {
     public static class UOFileManager
     {
+        public static string[] GetUOFiles(string path, string match)
+        {
+            return Directory.GetFiles(Path.Combine(BasePath, path), match);
+        }
+
         public static string GetUOFilePath(string file)
         {
             if (!UOFilesOverrideMap.Instance.TryGetValue(file.ToLowerInvariant(), out string uoFilePath))
@@ -305,6 +312,11 @@ namespace ClassicUO.Assets
                     Log.Info("<< PATCHED.");
                 }
             }
+            
+            GumpsLoader.Instance.OverrideTextures().Wait();
+            ArtLoader.Instance.OverrideTextures().Wait();
+            
+            
 
 
             Log.Trace($"Files loaded in: {stopwatch.ElapsedMilliseconds} ms!");

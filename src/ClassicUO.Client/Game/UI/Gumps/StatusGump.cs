@@ -70,17 +70,26 @@ namespace ClassicUO.Game.UI.Gumps
             switch ((ButtonType) buttonID)
             {
                 case ButtonType.BuffIcon:
-
-                    BuffGump gump = UIManager.GetGump<BuffGump>();
-
-                    if (gump == null)
+                    if (World.Settings.GeneralFlags.EnhancedBuffInformation)
                     {
-                        UIManager.Add(new BuffGump(100, 100));
+                        EnhancedBuffGump gump = UIManager.GetGump<EnhancedBuffGump>();
+                        gump?.Dispose();
+
+                        UIManager.Add(new EnhancedBuffGump(Mouse.Position.X, Mouse.Position.Y));
                     }
                     else
                     {
-                        gump.SetInScreen();
-                        gump.BringOnTop();
+                        BuffGump gump = UIManager.GetGump<BuffGump>();
+
+                        if (gump == null)
+                        {
+                            UIManager.Add(new BuffGump(100, 100));
+                        }
+                        else
+                        {
+                            gump.SetInScreen();
+                            gump.BringOnTop();
+                        }
                     }
 
                     break;

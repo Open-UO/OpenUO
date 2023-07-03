@@ -40,7 +40,9 @@ namespace ClassicUO.Game.Data
         FixedFrom = 0x03,
         ScreenFade = 0x04,
 
-        DragEffect = 0x05, // custom
+        DragEffect = 0x05,     // custom
+        MovingTimed = 0x40,    // OUO option
+        MultiPathTimed = 0x41, // OUO option
 
         Nothing = 0xFF
     }

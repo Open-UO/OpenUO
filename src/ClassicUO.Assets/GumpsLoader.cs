@@ -35,9 +35,12 @@ using ClassicUO.Utility;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using ClassicUO.IO.Audio;
 
 namespace ClassicUO.Assets
 {
@@ -57,6 +60,70 @@ namespace ClassicUO.Assets
             _instance ?? (_instance = new GumpsLoader(MAX_GUMP_DATA_INDEX_COUNT));
 
         public bool UseUOPGumps = false;
+        
+        public Task OverrideTextures()
+        {
+            return Task.Run(() =>
+            {
+                Console.WriteLine("Loading Gump Overrides");
+                try
+                {
+                    string[] loadOverrideFiles = UOFileManager.GetUOFiles("./override/gump", "*.*");
+
+                    foreach (string filename in loadOverrideFiles)
+                    {
+                        Console.WriteLine($"Found Override File: {filename}");
+                        try
+                        {
+                            if (Regex.IsMatch(filename, @".png|.jpg|.gif"))
+                            {
+                                var loadedFile = Path.GetFileName(filename);
+
+                                string[] toBeTrimmed = { ".jpg", ".png", ".gif" };
+
+                                foreach (string format in toBeTrimmed)
+                                    if (loadedFile.EndsWith(format))
+                                    {
+                                        loadedFile = loadedFile.Substring(0, loadedFile.LastIndexOf(format));
+                                        break; //only allow one match at most
+                                    }
+
+                                int overrideFileToHex = Convert.ToInt32(loadedFile, 16);
+
+                                using (var imageStream = File.OpenRead(filename))
+                                {
+                                    try
+                                    {
+                                        Console.WriteLine($"Loading override index: {overrideFileToHex} file: {filename}");
+                                        ResourcesOverride[overrideFileToHex] = File.ReadAllBytes(filename);
+                                        //ResourcesOverride[overrideFileToHex] = Texture2D.FromStream(Client.Game.GraphicsDevice, imageStream);
+                                        Console.WriteLine($"Finished override index: {overrideFileToHex} file {filename}");
+                                    }
+                                    catch (FileNotFoundException e)
+                                    {
+                                        Console.WriteLine(e);
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        Console.WriteLine(e);
+                                    }
+                                }
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine($"Exception Loading Overrided File: {filename} {e.Message}");
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"Exception getting override list: {e.Message}");
+                }
+                Console.WriteLine("Finished loading Gump Overrides");
+            });
+        }
+
 
         public override Task Load()
         {
@@ -188,80 +255,101 @@ namespace ClassicUO.Assets
 
         private unsafe void AddSpriteToAtlas(TextureAtlas atlas, uint index)
         {
-            ref UOFileIndex entry = ref GetValidRefEntry((int)index);
-
-            if (entry.Width <= 0 && entry.Height <= 0)
+            if (ResourcesOverride.ContainsKey((int)index)  && Game != null && Game.GraphicsDevice != null)
             {
-                return;
+                
+                var entry = Texture2D.FromStream(Game.GraphicsDevice, new MemoryStream(ResourcesOverride[(int)index]));
+                uint[] buffer = new uint[entry.Height * entry.Width];
+                ref var spriteInfo = ref _spriteInfos[index];
+                //Span<uint> pixels = entry.Width * entry.Height <= 1024 ? stackalloc uint[1024] : (buffer = System.Buffers.ArrayPool<uint>.Shared.Rent(entry.Width * entry.Height));
+
+                spriteInfo.Texture = entry;
+                spriteInfo.UV = new Rectangle(0, 0, entry.Width, entry.Height);
+
+                Console.WriteLine($"overriding {index} {entry.Width} x {entry.Height}");
+                //Span<uint> pixels = entry.Width * entry.Height <= 1024 ? stackalloc uint[1024] : (buffer = System.Buffers.ArrayPool<uint>.Shared.Rent(entry.Width * entry.Height));
+
+                entry.GetData<uint>(buffer);
+                _picker.Set(index, entry.Width, entry.Height, buffer);
+
             }
-
-            ushort color = entry.Hue;
-
-            _file.SetData(entry.Address, entry.FileSize);
-            _file.Seek(entry.Offset);
-
-            IntPtr dataStart = _file.PositionAddress;
-
-            uint[] buffer = null;
-
-            Span<uint> pixels = entry.Width * entry.Height <= 1024 ? stackalloc uint[1024] : (buffer = System.Buffers.ArrayPool<uint>.Shared.Rent(entry.Width * entry.Height));
-
-            try
+            else
             {
-                int* lookuplist = (int*)dataStart;
+                ref UOFileIndex entry = ref GetValidRefEntry((int)index);
 
-                int gsize;
-
-                for (int y = 0, half_len = entry.Length >> 2; y < entry.Height; y++)
+                if (entry.Width <= 0 && entry.Height <= 0)
                 {
-                    if (y < entry.Height - 1)
-                    {
-                        gsize = lookuplist[y + 1] - lookuplist[y];
-                    }
-                    else
-                    {
-                        gsize = half_len - lookuplist[y];
-                    }
-
-                    GumpBlock* gmul = (GumpBlock*)(dataStart + (lookuplist[y] << 2));
-
-                    int pos = y * entry.Width;
-
-                    for (int i = 0; i < gsize; i++)
-                    {
-                        uint val = gmul[i].Value;
-
-                        if (color != 0 && val != 0)
-                        {
-                            val = HuesLoader.Instance.GetColor16(gmul[i].Value, color);
-                        }
-
-                        if (val != 0)
-                        {
-                            //val = 0x8000 | val;
-                            val = HuesHelper.Color16To32(gmul[i].Value) | 0xFF_00_00_00;
-                        }
-
-                        int count = gmul[i].Run;
-
-                        for (int j = 0; j < count; j++)
-                        {
-                            pixels[pos++] = val;
-                        }
-                    }
+                    return;
                 }
 
-                ref var spriteInfo = ref _spriteInfos[index];
+                ushort color = entry.Hue;
 
-                spriteInfo.Texture = atlas.AddSprite(pixels, entry.Width, entry.Height, out spriteInfo.UV);
-                _picker.Set(index, entry.Width, entry.Height, pixels);
-            }
-            finally
-            {
-                if (buffer != null)
+                _file.SetData(entry.Address, entry.FileSize);
+                _file.Seek(entry.Offset);
+
+                IntPtr dataStart = _file.PositionAddress;
+
+                uint[] buffer = null;
+
+                Span<uint> pixels = entry.Width * entry.Height <= 1024 ? stackalloc uint[1024] : (buffer = System.Buffers.ArrayPool<uint>.Shared.Rent(entry.Width * entry.Height));
+
+                try
                 {
-                    System.Buffers.ArrayPool<uint>.Shared.Return(buffer, true);
-                }             
+                    int* lookuplist = (int*)dataStart;
+
+                    int gsize;
+
+                    for (int y = 0, half_len = entry.Length >> 2; y < entry.Height; y++)
+                    {
+                        if (y < entry.Height - 1)
+                        {
+                            gsize = lookuplist[y + 1] - lookuplist[y];
+                        }
+                        else
+                        {
+                            gsize = half_len - lookuplist[y];
+                        }
+
+                        GumpBlock* gmul = (GumpBlock*)(dataStart + (lookuplist[y] << 2));
+
+                        int pos = y * entry.Width;
+
+                        for (int i = 0; i < gsize; i++)
+                        {
+                            uint val = gmul[i].Value;
+
+                            if (color != 0 && val != 0)
+                            {
+                                val = HuesLoader.Instance.GetColor16(gmul[i].Value, color);
+                            }
+
+                            if (val != 0)
+                            {
+                                //val = 0x8000 | val;
+                                val = HuesHelper.Color16To32(gmul[i].Value) | 0xFF_00_00_00;
+                            }
+
+                            int count = gmul[i].Run;
+
+                            for (int j = 0; j < count; j++)
+                            {
+                                pixels[pos++] = val;
+                            }
+                        }
+                    }
+
+                    ref var spriteInfo = ref _spriteInfos[index];
+
+                    spriteInfo.Texture = atlas.AddSprite(pixels, entry.Width, entry.Height, out spriteInfo.UV);
+                    _picker.Set(index, entry.Width, entry.Height, pixels);
+                }
+                finally
+                {
+                    if (buffer != null)
+                    {
+                        System.Buffers.ArrayPool<uint>.Shared.Return(buffer, true);
+                    }
+                }
             }
         }
 

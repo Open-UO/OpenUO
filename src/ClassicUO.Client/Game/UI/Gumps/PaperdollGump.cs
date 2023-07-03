@@ -604,7 +604,7 @@ namespace ClassicUO.Game.UI.Gumps
         {
             base.Restore(xml);
 
-            if (LocalSerial == World.Player)
+            if (LocalSerial == World.Player || LocalSerial == 0)
             {
                 BuildGump();
 

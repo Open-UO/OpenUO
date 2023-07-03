@@ -31,6 +31,7 @@
 #endregion
 
 using System;
+using Microsoft.Xna.Framework.Audio;
 
 namespace ClassicUO.IO.Audio
 {
@@ -38,10 +39,12 @@ namespace ClassicUO.IO.Audio
     {
         private readonly byte[] _waveBuffer;
 
-        public UOSound(string name, int index, byte[] buffer) : base(name, index)
+        public UOSound(string name, int index, byte[] buffer, int bitrate = 22050, AudioChannels audioChannels = AudioChannels.Mono) : base(name, index)
         {
             _waveBuffer = buffer;
             Delay = (uint) ((buffer.Length - 32) / 88.2f);
+            Frequency = bitrate;
+            Channels = audioChannels;
         }
 
         public bool CalculateByDistance { get; set; }

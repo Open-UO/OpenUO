@@ -691,6 +691,24 @@ namespace ClassicUO.Renderer
 
             return true;
         }
+        
+        public bool DrawSolidRectangle
+        (
+            Texture2D texture,
+            int x,
+            int y,
+            int width,
+            int height,
+            Vector3 hue,
+            float depth = 0f
+        )
+        {
+            Rectangle rect = new Rectangle(x, y, width, height);
+            Draw(texture, rect, null, hue, 0f, Vector2.Zero, SpriteEffects.None, depth);
+
+
+            return true;
+        }
 
         public void DrawLine
         (
