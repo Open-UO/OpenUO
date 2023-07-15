@@ -145,7 +145,6 @@ namespace ClassicUO
             GraphicsDevice.Textures[2] = _hueSamplers[1];
             GraphicsDevice.Textures[3] = _hueSamplers[2];
 
-            MapLoader.MapsLayouts = Settings.GlobalSettings.MapsLayouts;
 
             Fonts.Initialize(GraphicsDevice);
             SolidColorTextureCache.Initialize(GraphicsDevice);

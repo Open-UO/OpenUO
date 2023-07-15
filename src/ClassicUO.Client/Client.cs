@@ -179,6 +179,8 @@ namespace ClassicUO
             Log.Trace($"Client path: '{clientPath}'");
             Log.Trace($"Client version: {clientVersion}");
             Log.Trace($"Protocol: {Protocol}");
+            
+            MapLoader.MapsLayouts = Settings.GlobalSettings.MapsLayouts;
 
             // ok now load uo files
             UOFileManager.Load(Version, Settings.GlobalSettings.UltimaOnlineDirectory, Settings.GlobalSettings.UseVerdata, Settings.GlobalSettings.Language);
