@@ -228,11 +228,9 @@ namespace ClassicUO.Assets
 
 
                     int mapblocksize = sizeof(MapBlock);
-
-                    if (_filesMap[0].Length / mapblocksize == 393216 || UOFileManager.Version < ClientVersion.CV_4011D)
-                    {
-                        MapsDefaultSize[0, 0] = MapsDefaultSize[1, 0] = 6144;
-                    }
+                    for (var i = 0; i < MAPS_COUNT; ++i)
+                        if (_filesMap[i].Length / mapblocksize == 393216 || UOFileManager.Version < ClientVersion.CV_4011D)
+                            MapsDefaultSize[i, 0] = 6144;
 
                     // This is an hack to patch correctly all maps when you have to fake map1
                     if (_filesMap[1] == null || _filesMap[1].StartAddress == IntPtr.Zero)
